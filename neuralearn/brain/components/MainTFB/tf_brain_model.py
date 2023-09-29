@@ -20,30 +20,25 @@ class Attention(tf.keras.layers.Layer):
         return context_vector, attention_weights
 
 class PyTorchWrapper(tf.keras.layers.Layer):
-    def __init__(self, pytorch_model, train_mode=False):
+    def __init__(self, pytorch_model):
         super(PyTorchWrapper, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.pytorch_model = pytorch_model.to(self.device)
-        if train_mode:
+
+    def call(self, inputs, training=None, **kwargs):
+        if training:
             self.pytorch_model.train()
         else:
             self.pytorch_model.eval()
 
-    def call(self, inputs, **kwargs):
         inputs_torch = torch.tensor(inputs.numpy(), dtype=torch.float32).to(self.device)
         with torch.no_grad():
             outputs_torch = self.pytorch_model(inputs_torch)
         outputs_tf = tf.convert_to_tensor(outputs_torch.cpu().numpy(), dtype=tf.float32)
         return outputs_tf
 
-class Occipital:
-    pass
-
-class Temporal:
-    pass
-
 class MainTFBrain(tf.keras.Model):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, amygdala_model, hippocampus_model, occipital_lobe_model, temporal_lobe_model):
         super(MainTFBrain, self).__init__()
 
         self.amygdala = PyTorchWrapper(amygdala_model)
@@ -63,14 +58,11 @@ class MainTFBrain(tf.keras.Model):
         occipital_output = self.occipital(x, training=training)
         temporal_output = self.temporal(x, training=training)
 
-        # Concatenate the outputs together
         combined_input = tf.concat([x, amygdala_output, hippocampus_output, occipital_output, temporal_output], axis=-1)
-
-        # Expand the dimensions for the RNN
         combined_input = tf.expand_dims(combined_input, 1)
 
         output, state = self.rnn(combined_input)
-        output = self.fc(output)
+        output = self.fc(output[:, 0])
         return output, state
 
 class MAML:
@@ -125,7 +117,7 @@ hippocampus_model = DummyPyTorchModel()
 occipital_lobe_model = DummyPyTorchModel()
 temporal_lobe_model = DummyPyTorchModel()
 
-tf_model = MainTFBrain(output_dim)
+tf_model = MainTFBrain(output_dim, amygdala_model, hippocampus_model, occipital_lobe_model, temporal_lobe_model)
 
 optimizer = tf.keras.optimizers.Adam()
 maml = MAML(tf_model, optimizer)

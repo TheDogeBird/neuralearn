@@ -1,8 +1,22 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import DataLoader, random_split, Dataset
 
+# Sample Dataset. Replace with your own dataset structure.
+class SampleDataset(Dataset):
+    def __init__(self):
+        # TODO: Initialize dataset, download data, etc.
+        self.data = torch.randn(1000, 602112)  # Just a placeholder
+        self.labels = torch.randint(0, 10, (1000,))
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
 
 class Amygdala(nn.Module):
     def __init__(self, input_size=602112, hidden_size=1024, output_size=10, interaction_modules=None):
@@ -58,8 +72,86 @@ class Amygdala(nn.Module):
         return meta_loss
 
 
-# Add training and evaluation functions, data loaders, and other essential utilities as required.
+CHECKPOINT_DIR = 'E:\\seriousprojects\\neuralearn\\checkpoints'
+
+
+def save_model_weights(model, model_name):
+    path = os.path.join(CHECKPOINT_DIR, f"{model_name}_checkpoint.pth")
+    torch.save(model.state_dict(), path)
+
+
+def load_model_weights(model, model_name):
+    path = os.path.join(CHECKPOINT_DIR, f"{model_name}_checkpoint.pth")
+    model.load_state_dict(torch.load(path))
+
+
+def train(model, loader, optimizer, criterion, device):
+    model.train()
+    total_loss = 0
+    for data, labels in loader:
+        data, labels = data.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(data)
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item()
+    return total_loss / len(loader)
+
+
+def evaluate(model, loader, criterion, device):
+    model.eval()
+    total_loss = 0
+    correct_predictions = 0
+    with torch.no_grad():
+        for data, labels in loader:
+            data, labels = data.to(device), labels.to(device)
+
+            outputs = model(data)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item()
+
+            _, predicted = outputs.max(1)
+            correct_predictions += predicted.eq(labels).sum().item()
+
+    accuracy = 100. * correct_predictions / len(loader.dataset)
+    return total_loss / len(loader), accuracy
+
+
+def main():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = Amygdala().to(device)
+
+    dataset = SampleDataset()
+    train_size = int(0.8 * len(dataset))
+    test_size = len(dataset) - train_size
+    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=32)
+
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.CrossEntropyLoss()
+
+    epochs = 10
+    for epoch in range(epochs):
+        train_loss = train(model, train_loader, optimizer, criterion, device)
+        test_loss, accuracy = evaluate(model, test_loader, criterion, device)
+
+        print(f"Epoch {epoch + 1}/{epochs}")
+        print(f"Train Loss: {train_loss:.4f} | Test Loss: {test_loss:.4f} | Test Acc: {accuracy:.2f}%")
+
+        # Save model weights
+        save_model_weights(model, 'amygdala')
+
+    print("Training finished.")
+
 
 if __name__ == "__main__":
-    # Placeholder: add your training, data loading, and evaluation code here.
-    pass
+    if not os.path.exists(CHECKPOINT_DIR):
+        os.makedirs(CHECKPOINT_DIR)
+    main()
