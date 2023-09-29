@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-import pyaudio
+import torch.nn.functional as F
+import torch.optim as optim
 import numpy as np
-import librosa
-from scipy.fftpack import dct
+import pyaudio
 
 
 class TemporalLobe(nn.Module):
@@ -38,31 +38,67 @@ class TemporalLobe(nn.Module):
         return x
 
     def listen(self):
-        # Get audio data
-        audio_data = self.stream.read(1024)
-        audio_data = np.frombuffer(audio_data, dtype=np.int16)
+        try:
+            # Get audio data
+            audio_data = self.stream.read(1024)
+            audio_data = np.frombuffer(audio_data, dtype=np.int16)
+            audio_data = audio_data / 32767.  # Normalize audio to [-1, 1]
 
-        # Extract features (e.g., MFCCs)
-        features = self.extract_features(audio_data)
-        output = self.forward(features, mode="auditory")
+            # Extract features
+            features = self.extract_features(audio_data)
+            output = self.forward(features, mode="auditory")
 
-        # Send the recognized patterns to other parts of the "brain"
-        for module_name, module in self.interaction_modules.items():
-            if module_name == "occipital":
-                module.visual_verification(output)
-            else:
-                module.react(output)
+            # Send the recognized patterns to other parts of the "brain"
+            for module_name, module in self.interaction_modules.items():
+                if hasattr(module, "react_to_audio"):
+                    module.react_to_audio(output)
 
-    def extract_features(audio_data, sr=44100, n_mfcc=13):
-        # Compute MFCCs using librosa
-        mfccs = librosa.feature.mfcc(y=audio_data, sr=sr, n_mfcc=n_mfcc)
-        return torch.tensor(mfccs).float()
+        except Exception as e:
+            print(f"Error while listening: {e}")
+
+    def extract_features(self, audio_data):
+        # Compute Short-Time Fourier Transform (STFT) using PyTorch
+        audio_tensor = torch.tensor(audio_data).float().unsqueeze(0)
+        specgram = torch.stft(audio_tensor, n_fft=400, hop_length=160, win_length=400, window=torch.hamming_window(400))
+        power_spectrum = specgram.pow(2).sum(-1)
+        features = power_spectrum.mean(-1).unsqueeze(0)
+
+        return features
 
     def add_interaction_module(self, module_name, module):
         self.interaction_modules[module_name] = module
 
-    def close(self):
-        self.stream.stop_stream()
-        self.stream.close()
-        self.p.terminate()
+    def maml_inner_loop(self, support_data, query_data, num_adaptation_steps=1, step_size=0.1):
+        """
+        Execute the inner loop of the MAML algorithm.
+        """
+        loss_fn = F.cross_entropy
+        adapted_state_dict = self.state_dict()
 
+        for step in range(num_adaptation_steps):
+            support_predictions = self(support_data[0], mode="language")  # Here, assuming text data
+            loss = loss_fn(support_predictions, support_data[1])
+            grads = torch.autograd.grad(loss, self.parameters(), create_graph=True)
+            adapted_state_dict = {name: param - step_size * grad
+                                  for (name, param), grad in zip(self.named_parameters(), grads)}
+
+        self.load_state_dict(adapted_state_dict)
+        query_predictions = self(query_data[0], mode="language")
+        meta_loss = loss_fn(query_predictions, query_data[1])
+
+        return meta_loss
+
+    def close(self):
+        try:
+            self.stream.stop_stream()
+            self.stream.close()
+        except Exception as e:
+            print(f"Error while closing the stream: {e}")
+        finally:
+            self.p.terminate()
+
+# Add training and evaluation functions, data loaders, and other essential utilities as required.
+
+if __name__ == "__main__":
+    # Placeholder: add your training, data loading, and evaluation code here.
+    pass

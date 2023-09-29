@@ -5,53 +5,92 @@ from brain.components.hippocampus.hippocampus import Hippocampus
 from brain.components.occipital.occipital import OccipitalLobe
 from brain.components.temporal.temporal import TemporalLobe
 
-# Parameters
-amygdala_input_size = 128
-amygdala_hidden_size = 256
-amygdala_output_size = 64
+def initialize_brain_components():
+    # Parameters for each component
+    params = {
+        'amygdala': {
+            'input_size': 602112,
+            'hidden_size': 256,
+            'output_size': 64
+        },
+        'hippocampus': {
+            'input_size': 10000,
+            'hidden_size': 256,
+            'output_size': 64
+        },
+        'occipital_lobe': {
+            'input_size': 128,
+            'hidden_size': 256,
+            'output_size': 128
+        },
+        'temporal_lobe': {
+            'input_size': 128,
+            'hidden_size': 256,
+            'output_size': 128
+        }
+    }
 
-hippocampus_input_size = 128
-hippocampus_hidden_size = 256
-hippocampus_output_size = 64
+    # Initialization of each component
+    amygdala = Amygdala(**params['amygdala'])
+    hippocampus = Hippocampus(**params['hippocampus'])
+    occipital_lobe = OccipitalLobe(**params['occipital_lobe'])
+    temporal_lobe = TemporalLobe(**params['temporal_lobe'])
 
-occipital_input_size = 128
-occipital_hidden_size = 256
-occipital_output_size = 128
+    return amygdala, hippocampus, occipital_lobe, temporal_lobe
 
-temporal_input_size = 128
-temporal_hidden_size = 256
-temporal_output_size = 128
+def main():
+    # Get initialized components
+    amygdala, hippocampus, occipital_lobe, temporal_lobe = initialize_brain_components()
 
-# Initialize the components of the brain
-amygdala = Amygdala(amygdala_input_size, amygdala_hidden_size, amygdala_output_size)
-hippocampus = Hippocampus(hippocampus_input_size, hippocampus_hidden_size, hippocampus_output_size)
-occipital_lobe = OccipitalLobe()
-temporal_lobe = TemporalLobe()
+    # Set PyTorch models to evaluation mode (assuming you're not training them here)
+    amygdala.eval()
+    hippocampus.eval()
+    occipital_lobe.eval()
+    temporal_lobe.eval()
 
-# Set the PyTorch models to evaluation mode
-amygdala.eval()
-hippocampus.eval()
-occipital_lobe.eval()
-temporal_lobe.eval()
+    # Parameters for MainTFBrain
+    rnn_units = 512
+    input_dim = sum([comp.output_size for comp in [amygdala, hippocampus, occipital_lobe, temporal_lobe]])
+    output_dim = 64  # Adjust based on your needs
 
-# Set up the parameters for MainTFBrain
-rnn_units = 512
-input_dim = 128  # replace with the actual input dimension
-output_dim = 64  # replace with the actual output dimension
+    # Initialize MainTFBrain with the created components
+    brain = MainTFBrain(rnn_units=rnn_units, input_dim=input_dim, output_dim=output_dim,
+                        amygdala_model=amygdala, hippocampus_model=hippocampus,
+                        occipital_lobe_model=occipital_lobe, temporal_lobe_model=temporal_lobe)
 
-# Initialize MainTFBrain with the created components
-brain = MainTFBrain(rnn_units=rnn_units, input_dim=input_dim, output_dim=output_dim,
-                    amygdala_model=amygdala, hippocampus_model=hippocampus,
-                    occipital_lobe_model=occipital_lobe, temporal_lobe_model=temporal_lobe)
+    # Dummy data for testing (adjust this to your actual data format and dimensionality)
+    test_input = tf.random.uniform((1, 448, 448, 3))
+    input_data = {
+        'x': test_input,
+        'hidden': None  # replace with an actual initial hidden state if needed
+    }
 
-# To run a test, you can create some dummy input data and call the brain model
-test_input = tf.random.uniform((1, input_dim))
-hidden_state = None  # replace with actual initial hidden state if needed
+    # Call the brain model with the input data
+    output, new_state, attention_weights = brain(input_data)
 
-# Call the brain model with the test input
-output, new_state, attention_weights = brain.call(test_input, hidden_state)
+    # Display results
+    print("Output:", output)
+    print("New State:", new_state)
+    print("Attention Weights:", attention_weights)
 
-# Print the results
-print("Output:", output)
-print("New State:", new_state)
-print("Attention Weights:", attention_weights)
+    # Demonstrating the Hippocampus functionalities
+    demonstrate_hippocampus_memory(hippocampus)
+
+def demonstrate_hippocampus_memory(hippocampus):
+    print("\n---- Hippocampus Memory Demonstration ----")
+    # Store and recall memories
+    st_mem, lt_mem = hippocampus.recall_memory()
+    print("Short Term Memory:", st_mem)
+    print("Long Term Memory:", lt_mem)
+
+    # Clear memory (demonstration purposes)
+    hippocampus.clear_memory()
+
+    # Check memories post-clearing
+    st_mem, lt_mem = hippocampus.recall_memory()
+    print("\nAfter Clearing:")
+    print("Short Term Memory:", st_mem)
+    print("Long Term Memory:", lt_mem)
+
+if __name__ == "__main__":
+    main()
