@@ -5,10 +5,13 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split, Dataset
 
+# Constants
+CHECKPOINT_DIR = "/checkpoints/"
+
+
 # Sample Dataset. Replace with your own dataset structure.
 class SampleDataset(Dataset):
     def __init__(self):
-        # TODO: Initialize dataset, download data, etc.
         self.data = torch.randn(1000, 602112)  # Just a placeholder
         self.labels = torch.randint(0, 10, (1000,))
 
@@ -17,6 +20,7 @@ class SampleDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
+
 
 class Amygdala(nn.Module):
     def __init__(self, input_size=602112, hidden_size=1024, output_size=10, interaction_modules=None):
@@ -35,54 +39,45 @@ class Amygdala(nn.Module):
         # Interaction Mechanism with other brain components
         self.interaction_modules = interaction_modules or {}
 
-    def forward(self, x):
-        # Flatten tensor dynamically based on the input shape
-        x = x.view(x.size(0), -1)
+        # Initializing the Hippocampus instance
+        self.hippocampus = self.interaction_modules.get("hippocampus", None)
 
-        # Basic flow
+    def forward(self, x):
+        x = x.view(x.size(0), -1)
         x = F.relu(self.ln1(self.fc1(x)))
         x = self.dropout1(x)
         x = F.relu(self.ln2(self.fc2(x)))
         x = self.dropout2(x)
         x = self.fc3(x)
+        x = self.softmax(x)
 
-        return self.softmax(x)
+        if self.hippocampus:
+            self.hippocampus.st_memory.append(x.detach().clone())
+            if len(self.hippocampus.st_memory) > self.hippocampus.st_memory_size:
+                del self.hippocampus.st_memory[0]
 
-    def add_interaction_module(self, module_name, module):
-        self.interaction_modules[module_name] = module
-
-    def maml_inner_loop(self, support_data, query_data, num_adaptation_steps=1, step_size=0.1):
-        """
-        Execute the inner loop of the MAML algorithm.
-        """
-        loss_fn = F.cross_entropy
-        adapted_state_dict = self.state_dict()
-
-        for step in range(num_adaptation_steps):
-            support_predictions = self(support_data[0])
-            loss = loss_fn(support_predictions, support_data[1])
-            grads = torch.autograd.grad(loss, self.parameters(), create_graph=True)
-            adapted_state_dict = {name: param - step_size * grad
-                                  for (name, param), grad in zip(self.named_parameters(), grads)}
-
-        self.load_state_dict(adapted_state_dict)
-        query_predictions = self(query_data[0])
-        meta_loss = loss_fn(query_predictions, query_data[1])
-
-        return meta_loss
-
-
-CHECKPOINT_DIR = 'E:\\seriousprojects\\neuralearn\\checkpoints'
+        return x
 
 
 def save_model_weights(model, model_name):
     path = os.path.join(CHECKPOINT_DIR, f"{model_name}_checkpoint.pth")
-    torch.save(model.state_dict(), path)
+    try:
+        torch.save(model.state_dict(), path)
+        print(f"Model weights saved to {path}")
+    except Exception as e:
+        print(f"Error saving model weights to {path}. Error: {e}")
 
 
 def load_model_weights(model, model_name):
     path = os.path.join(CHECKPOINT_DIR, f"{model_name}_checkpoint.pth")
-    model.load_state_dict(torch.load(path))
+    if os.path.exists(path):
+        try:
+            model.load_state_dict(torch.load(path))
+            print(f"Loaded model weights from {path}")
+        except Exception as e:
+            print(f"Error loading model weights from {path}. Error: {e}")
+    else:
+        print(f"No checkpoint found at {path}")
 
 
 def train(model, loader, optimizer, criterion, device):
@@ -90,15 +85,11 @@ def train(model, loader, optimizer, criterion, device):
     total_loss = 0
     for data, labels in loader:
         data, labels = data.to(device), labels.to(device)
-
         optimizer.zero_grad()
-
         outputs = model(data)
         loss = criterion(outputs, labels)
-
         loss.backward()
         optimizer.step()
-
         total_loss += loss.item()
     return total_loss / len(loader)
 
@@ -110,21 +101,22 @@ def evaluate(model, loader, criterion, device):
     with torch.no_grad():
         for data, labels in loader:
             data, labels = data.to(device), labels.to(device)
-
             outputs = model(data)
             loss = criterion(outputs, labels)
             total_loss += loss.item()
-
             _, predicted = outputs.max(1)
             correct_predictions += predicted.eq(labels).sum().item()
-
     accuracy = 100. * correct_predictions / len(loader.dataset)
     return total_loss / len(loader), accuracy
 
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = Amygdala().to(device)
+
+    # Placeholder. You need to properly instantiate the Hippocampus model.
+    hippocampus_instance = None
+
+    model = Amygdala(interaction_modules={"hippocampus": hippocampus_instance}).to(device)
 
     dataset = SampleDataset()
     train_size = int(0.8 * len(dataset))
@@ -152,6 +144,12 @@ def main():
 
 
 if __name__ == "__main__":
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = Amygdala().to(device)
+
+    # Load previous model weights (if any)
+    load_model_weights(model, 'amygdala')
+
     if not os.path.exists(CHECKPOINT_DIR):
         os.makedirs(CHECKPOINT_DIR)
     main()

@@ -19,17 +19,14 @@ class OccipitalLobe(nn.Module):
         self.bn3 = nn.BatchNorm2d(64)
 
         self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
-
         self.fc1 = nn.Linear(64, num_classes)
 
     def forward(self, x):
         x = torch.relu(self.bn1(self.conv1(x)))
         x = torch.relu(self.bn2(self.conv2(x)))
         x = torch.relu(self.bn3(self.conv3(x)))
-
         x = self.adaptive_pool(x)
         x = x.view(x.size(0), -1)
-
         x = torch.relu(self.fc1(x))
         return x
 

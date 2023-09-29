@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import DataLoader, random_split, Dataset
 
 
 class Hippocampus(nn.Module):
@@ -76,28 +77,65 @@ class Hippocampus(nn.Module):
         self.interaction_modules[module_name] = module
 
     def maml_inner_loop(self, support_data, query_data, num_adaptation_steps=1, step_size=0.1):
-        """
-        Execute the inner loop of the MAML algorithm.
-        """
-        loss_fn = F.mse_loss  # Consider using MSE for this case due to the type of data
+        loss_fn = F.cross_entropy
         adapted_state_dict = self.state_dict()
-
         for step in range(num_adaptation_steps):
-            support_predictions = self(support_data[0])
+            support_predictions = self(support_data[0], mode="language")
             loss = loss_fn(support_predictions, support_data[1])
-            grads = torch.autograd.grad(loss, self.parameters(), create_graph=True)
-            adapted_state_dict = {name: param - step_size * grad
-                                  for (name, param), grad in zip(self.named_parameters(), grads)}
-
+            grads = torch.autograd.grad(loss, list(self.parameters()), create_graph=True)  # Convert to list
+            adapted_state_dict = {name: param - step_size * grad for (name, param), grad in
+                                  zip(self.named_parameters(), grads)}
         self.load_state_dict(adapted_state_dict)
-        query_predictions = self(query_data[0])
+        query_predictions = self(query_data[0], mode="language")
         meta_loss = loss_fn(query_predictions, query_data[1])
-
         return meta_loss
 
 
-# Add training and evaluation functions, data loaders, and other essential utilities as required.
+# Sample Dataset. Replace with your own dataset structure.
+class SampleDataset(Dataset):
+    def __init__(self):
+        self.data = torch.randn(1000, 602112)  # Just a placeholder
+        self.labels = torch.randint(0, 10, (1000,))
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
+
+
+def main():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    model = Hippocampus(input_size=602112, hidden_size=1024, output_size=602112).to(device)
+
+    dataset = SampleDataset()
+    train_size = int(0.8 * len(dataset))
+    test_size = len(dataset) - train_size
+    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=32)
+
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.MSELoss()
+
+    epochs = 10
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0
+        for data, _ in train_loader:  # We do not use labels here
+            data = data.to(device)
+            optimizer.zero_grad()
+            outputs = model(data)
+            loss = criterion(outputs, data)  # Comparing outputs with the original data
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        print(f"Epoch {epoch + 1}/{epochs}, Loss: {total_loss / len(train_loader)}")
+
+    print("Training finished.")
+
 
 if __name__ == "__main__":
-    # Placeholder: add your training, data loading, and evaluation code here.
-    pass
+    main()

@@ -2,6 +2,8 @@ import os
 import torch
 import tensorflow as tf
 from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
 
 from brain.components.MainTFB.tf_brain_model import MainTFBrain
 from brain.components.amygdala.amygdala import Amygdala
@@ -74,11 +76,18 @@ def initialize_brain_components():
 def main():
     amygdala, hippocampus, occipital_lobe, temporal_lobe = initialize_brain_components()
 
-    # Load pretrained weights
-    load_model_weights(amygdala, 'amygdala')
-    load_model_weights(hippocampus, 'hippocampus')
-    load_model_weights(occipital_lobe, 'occipital_lobe')
-    load_model_weights(temporal_lobe, 'temporal_lobe')
+    # Ensure checkpoints directory exists
+    if not os.path.exists(CHECKPOINT_DIR):
+        os.makedirs(CHECKPOINT_DIR)
+
+    # Error handling in case of missing model weights
+    try:
+        load_model_weights(amygdala, 'amygdala')
+        load_model_weights(hippocampus, 'hippocampus')
+        load_model_weights(occipital_lobe, 'occipital_lobe')
+        load_model_weights(temporal_lobe, 'temporal_lobe')
+    except Exception as e:
+        print(f"Error loading model weights: {e}")
 
     amygdala.eval()
     hippocampus.eval()
