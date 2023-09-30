@@ -4,7 +4,6 @@ import tensorflow as tf
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-
 from brain.components.MainTFB.tf_brain_model import MainTFBrain
 from brain.components.amygdala.amygdala import Amygdala
 from brain.components.hippocampus.hippocampus import Hippocampus
@@ -38,6 +37,9 @@ def train_amygdala_with_maml(amygdala, train_loader):
         optimizer.zero_grad()
         meta_loss.backward()
         optimizer.step()
+
+    # Save model after training
+    save_model_weights(amygdala, 'amygdala')
 
 def save_model_weights(model, model_name):
     torch.save(model.state_dict(), os.path.join(CHECKPOINT_DIR, f"{model_name}_checkpoint.pth"))

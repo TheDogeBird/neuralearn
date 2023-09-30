@@ -6,7 +6,28 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split, Dataset
 
 # Constants
-CHECKPOINT_DIR = "/checkpoints/"
+#CHECKPOINT_DIR = "checkpoints"
+CHECKPOINT_DIR = "E:\\seriousprojects\\neuralearn\\checkpoints"
+
+
+def save_checkpoint(state, filename='checkpoint.pth'):
+    """Save checkpoint if a new best is achieved"""
+    if not os.path.exists(CHECKPOINT_DIR):
+        os.mkdir(CHECKPOINT_DIR)
+    torch.save(state, filename)
+
+def load_checkpoint(model, optimizer, filename='checkpoint.pth'):
+    """Load checkpoint."""
+    if os.path.isfile(filename):
+        print(f"=> Loading checkpoint '{filename}'")
+        checkpoint = torch.load(filename)
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        print(f"=> Loaded checkpoint '{filename}' (epoch {checkpoint['epoch']})")
+        return checkpoint['epoch']
+    else:
+        print(f"=> No checkpoint found at '{filename}'")
+        return None
 
 
 # Sample Dataset. Replace with your own dataset structure.
@@ -80,18 +101,25 @@ def load_model_weights(model, model_name):
         print(f"No checkpoint found at {path}")
 
 
-def train(model, loader, optimizer, criterion, device):
-    model.train()
-    total_loss = 0
-    for data, labels in loader:
-        data, labels = data.to(device), labels.to(device)
-        optimizer.zero_grad()
-        outputs = model(data)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item()
-    return total_loss / len(loader)
+def train(model, train_loader, criterion, optimizer, epochs=10):
+    for epoch in range(epochs):
+        model.train()
+        for data, target in train_loader:
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+
+        print(f"Epoch: {epoch+1}, Loss: {loss.item()}")
+
+        # Save the model checkpoint at the end of each epoch
+        checkpoint_path = os.path.join(CHECKPOINT_DIR, f"epoch_{epoch+1}_checkpoint.pth")
+        save_checkpoint({
+            'epoch': epoch + 1,
+            'state_dict': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+        }, checkpoint_path)
 
 
 def evaluate(model, loader, criterion, device):

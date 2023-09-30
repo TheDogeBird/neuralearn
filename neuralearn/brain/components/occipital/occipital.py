@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import cv2
-import tensorflow as tf
-
 
 class OccipitalLobe(nn.Module):
     def __init__(self, num_classes=128, input_size=(448, 448)):
@@ -21,6 +19,19 @@ class OccipitalLobe(nn.Module):
         self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc1 = nn.Linear(64, num_classes)
 
+        # Pattern recognition
+        self.pattern_recognition = nn.Sequential(
+            nn.Linear(num_classes, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, num_classes)
+        )
+
     def forward(self, x):
         x = torch.relu(self.bn1(self.conv1(x)))
         x = torch.relu(self.bn2(self.conv2(x)))
@@ -28,7 +39,11 @@ class OccipitalLobe(nn.Module):
         x = self.adaptive_pool(x)
         x = x.view(x.size(0), -1)
         x = torch.relu(self.fc1(x))
-        return x
+
+        # Pattern recognition
+        pattern_features = self.pattern_recognition(x)
+
+        return x, pattern_features
 
     def capture_and_process(self, max_attempts=10):
         attempt = 0
@@ -48,7 +63,7 @@ class OccipitalLobe(nn.Module):
                     frame = cv2.resize(frame, self.input_size)
                     frame = torch.tensor(frame).permute(2, 0, 1).float()
                     frame = (frame / 255.0 - 0.5) * 2.0
-                    frame = frame.unsqueeze(0).to(next(self.parameters()).device)
+                    frame = frame.unsqueeze(0)
                     return frame
                 else:
                     print("Failed to capture frame. Retrying...")
@@ -59,37 +74,3 @@ class OccipitalLobe(nn.Module):
 
         print("Max attempts reached. Giving up.")
         return None
-
-
-def pytorch_to_tensorflow(tensor):
-    return tf.convert_to_tensor(tensor.cpu().detach().numpy())
-
-
-class Brain(tf.keras.Model):
-    def __init__(self, input_size, hidden_size, num_classes):
-        super(Brain, self).__init__()
-        self.dense1 = tf.keras.layers.Dense(hidden_size, activation='relu')
-        self.dense2 = tf.keras.layers.Dense(num_classes, activation='softmax')
-
-    def call(self, inputs, **kwargs):
-        x = self.dense1(inputs)
-        return self.dense2(x)
-
-
-if __name__ == "__main__":
-    occipital_lobe = OccipitalLobe(num_classes=128, input_size=(448, 448))
-    occipital_lobe.eval()  # set the model in evaluation mode
-
-    processed_image = occipital_lobe.capture_and_process()
-
-    if processed_image is not None:
-        with torch.no_grad():  # Ensure no gradients are computed for evaluation
-            pytorch_output = occipital_lobe(processed_image)
-        tf_input = pytorch_to_tensorflow(pytorch_output)
-
-        # Make sure tensorflow uses CPU to avoid potential GPU conflicts
-        with tf.device('/CPU:0'):
-            brain = Brain(input_size=128, hidden_size=64, num_classes=10)
-            brain_output = brain(tf_input)
-
-        print(brain_output)
