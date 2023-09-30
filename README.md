@@ -1,5 +1,9 @@
 # NeuraLearn
 
+![alt text](https://github.com/TheDogeBird/neuralearn/blob/main/aidiag.png?raw=true)
+
+
+
 NeuraLearn is a robust simulation of neural mechanisms in a computational model. By leveraging advanced machine learning techniques, NeuraLearn aims to bridge the gap between traditional deep learning models and biological neural processes.
 
 ![NeuraLearn Diagram](assets/diagram.png)
