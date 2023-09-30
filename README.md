@@ -131,8 +131,6 @@ We welcome contributions to NeuraLearn! Please see [CONTRIBUTING.md](CONTRIBUTIN
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
-
-- Dr. Jane Doe for her invaluable insights into neural processes.
 - The open-source community for their continual support and inspiration.
 - [OpenAI](https://openai.com/) for their extensive research in the field of artificial intelligence.
 The above block contains your existing README.md content appended with the codebase 
