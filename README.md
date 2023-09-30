@@ -11,18 +11,89 @@ At the heart of NeuraLearn's innovation is a distinct approach towards artificia
 ### 🚀 Features:
 
 - **Adaptive Learning**: Echoing the brain's intrinsic adaptability, NeuraLearn evolves beyond traditional learning. It fosters both task-specific mastery and broad adaptability, ensuring a spectrum of competencies.
-
 - **Holistic Integration**: Simulating distinct brain regions, NeuraLearn interlinks the Amygdala, Hippocampus, Occipital, and Temporal lobes with the Main TensorFlow Brain, producing a seamlessly integrated cognitive model.
-
 - **Neuro-Inspired Design**: By integrating models of the fear-response mechanism, memory functions, visual and auditory processing mechanisms, NeuraLearn offers a granular yet integrated approach towards AGI.
-
 ...
 
-- **Amygdala Simulation**: Replicates the fear-response mechanism seen in biological systems.
-- **Hippocampus Memory**: Models short-term and long-term memory functions.
-- **Occipital Lobe Processor**: Implements visual processing mechanisms.
-- **Temporal Lobe Processor**: Handles auditory and linguistic information.
-- **Main TensorFlow Brain**: Central processing unit that integrates outputs from all the components.
+## Codebase Overview
+
+### 🧠 Amygdala (`amygdala.py`)
+
+**File**: [amygdala.py](path_to_file/amygdala.py)
+
+**Description**: 
+This module encapsulates the simulation of emotional processing observed in biological systems, focusing particularly on fear recognition. By emulating the amygdala's role, the system gains the ability to perceive and react to potential threats.
+
+class Amygdala:
+def init(self):
+...
+
+def perceive_threat(self, stimulus):
+    ...
+
+### 🧠 Hippocampus (`hippocampus.py`)
+
+**File**: [hippocampus.py](path_to_file/hippocampus.py)
+
+**Description**:
+This file handles the modeling of both short-term and long-term memory functions. It tries to replicate the functions of the Hippocampus in mammalian brains.
+
+class Hippocampus:
+def init(self):
+...
+
+def store_memory(self, memory):
+    ...
+
+def retrieve_memory(self, query):
+    ...
+
+### 🧠 Occipital Lobe (`occipital_lobe.py`)
+
+**File**: [occipital_lobe.py](path_to_file/occipital_lobe.py)
+
+**Description**: 
+A module dedicated to visual processing mechanisms, modeling the functions of the Occipital Lobe in biological systems.
+
+class OccipitalLobe:
+def init(self):
+...
+
+def process_visual_data(self, data):
+    ...
+
+### 🧠 Temporal Lobe (`temporal_lobe.py`)
+
+**File**: [temporal_lobe.py](path_to_file/temporal_lobe.py)
+
+**Description**:
+Focused on auditory and linguistic information processing, this module simulates the functions of the Temporal Lobe.
+
+class TemporalLobe:
+def init(self):
+...
+
+
+def process_auditory_data(self, data):
+    ...
+
+### 🧠 Main TensorFlow Brain (`main_tf_brain.py`)
+
+**File**: [main_tf_brain.py](path_to_file/main_tf_brain.py)
+
+**Description**:
+Acts as the central processing unit that integrates outputs from all the individual components. This module interfaces with the specialized emulated regions to produce cohesive outputs.
+
+class MainTFBrain:
+def init(self):
+...
+
+
+def integrate_data(self, data):
+    ...
+
+def output_response(self):
+    ...
 
 ## Installation
 
@@ -64,3 +135,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - Dr. Jane Doe for her invaluable insights into neural processes.
 - The open-source community for their continual support and inspiration.
 - [OpenAI](https://openai.com/) for their extensive research in the field of artificial intelligence.
+The above block contains your existing README.md content appended with the codebase 
