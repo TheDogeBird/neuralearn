@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.testing._internal.common_nn import input_size
 from torch.utils.data import DataLoader, random_split, Dataset
 
-
 class Hippocampus(nn.Module):
-    MEMORY_SIZE = 100
-    INTERMEDIATE_SIZE = 500
+    MEMORY_SIZE = 12
+    INTERMEDIATE_SIZE = 20
 
     def __init__(self, input_size, hidden_size, output_size, memory_size=MEMORY_SIZE,
                  intermediate_size=INTERMEDIATE_SIZE, interaction_modules=None):
@@ -23,8 +23,8 @@ class Hippocampus(nn.Module):
         self.fc3 = nn.Linear(hidden_size, input_size)
 
         # Memory storage
-        self.short_term_memory = torch.randn((memory_size, input_size))
-        self.long_term_memory = torch.randn((memory_size, input_size))
+        self.short_term_memory = nn.Parameter(torch.randn((memory_size, input_size)))
+        self.long_term_memory = nn.Parameter(torch.randn((memory_size, input_size)))
 
         # Spatial processing (contextualization)
         self.spatial_processing = nn.Linear(input_size, intermediate_size)
@@ -49,13 +49,18 @@ class Hippocampus(nn.Module):
         x = self.spatial_processing(x)
         return x
 
+    def init_memory(self):
+        # Initialize memory storage (short-term and long-term memory)
+        self.short_term_memory = nn.Parameter(torch.randn((self.MEMORY_SIZE, 602112)))
+        self.long_term_memory = nn.Parameter(torch.randn((self.MEMORY_SIZE, 602112)))
+
     def store_memory(self, x):
-        self.short_term_memory = torch.roll(self.short_term_memory, shifts=-1, dims=0)
+        self.short_term_memory = nn.Parameter(torch.roll(self.short_term_memory, shifts=-1, dims=0))
         self.short_term_memory[-1] = x.squeeze()
 
         # Move short term memories to long term with a probability of 0.01
         if torch.rand(1).item() > 0.99:
-            self.long_term_memory = torch.roll(self.long_term_memory, shifts=-1, dims=0)
+            self.long_term_memory = nn.Parameter(torch.roll(self.long_term_memory, shifts=-1, dims=0))
             self.long_term_memory[-1] = self.short_term_memory[0]
 
     def retrieve_similar_memories(self, x, k=5, memory_type='short_term'):
@@ -76,20 +81,6 @@ class Hippocampus(nn.Module):
     def add_interaction_module(self, module_name, module):
         self.interaction_modules[module_name] = module
 
-    def maml_inner_loop(self, support_data, query_data, num_adaptation_steps=1, step_size=0.1):
-        loss_fn = F.cross_entropy
-        adapted_state_dict = self.state_dict()
-        for step in range(num_adaptation_steps):
-            support_predictions = self(support_data[0], mode="language")
-            loss = loss_fn(support_predictions, support_data[1])
-            grads = torch.autograd.grad(loss, list(self.parameters()), create_graph=True)  # Convert to list
-            adapted_state_dict = {name: param - step_size * grad for (name, param), grad in
-                                  zip(self.named_parameters(), grads)}
-        self.load_state_dict(adapted_state_dict)
-        query_predictions = self(query_data[0], mode="language")
-        meta_loss = loss_fn(query_predictions, query_data[1])
-        return meta_loss
-
 
 # Sample Dataset. Replace with your own dataset structure.
 class SampleDataset(Dataset):
@@ -103,27 +94,62 @@ class SampleDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
 
+def initialize_hippocampus(input_size, hidden_size, output_size, memory_size, intermediate_size):
+    """
+    Initialize and configure the Hippocampus neural network.
 
-def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    Args:
+    - input_size (int): The input size of the Hippocampus.
+    - hidden_size (int): The hidden size of the Hippocampus.
+    - output_size (int): The output size of the Hippocampus.
+    - memory_size (int): The size of the memory storage in the Hippocampus.
+    - intermediate_size (int): The size of the intermediate layer for spatial processing.
 
-    model = Hippocampus(input_size=602112, hidden_size=1024, output_size=602112).to(device)
+    Returns:
+    - model (Hippocampus): The initialized Hippocampus neural network.
+    - train_loader (DataLoader): The DataLoader for the training dataset.
+    - test_loader (DataLoader): The DataLoader for the testing dataset.
+    """
+    # Initialize the Hippocampus neural network
+    model = Hippocampus(input_size, hidden_size, output_size, memory_size, intermediate_size)
 
+    # Create a sample dataset (Replace this with your own dataset structure)
     dataset = SampleDataset()
+
+    # Split the dataset into training and testing sets
     train_size = int(0.8 * len(dataset))
     test_size = len(dataset) - train_size
     train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
+    # Create DataLoader for training and testing datasets
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=32)
 
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    criterion = nn.MSELoss()
+    return model, train_loader, test_loader
 
-    epochs = 10
+def train_hippocampus(model, train_loader, optimizer, criterion, epochs):
+    """
+    Train the Hippocampus neural network.
+
+    Args:
+    - model (Hippocampus): The initialized Hippocampus neural network.
+    - train_loader (DataLoader): The DataLoader for the training dataset.
+    - optimizer (optim.Optimizer): The optimizer for training.
+    - criterion (nn.Module): The loss criterion for training.
+    - epochs (int): The number of training epochs.
+
+    Returns:
+    - avg_epoch_loss (float): The average loss over all training epochs.
+    """
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
+    avg_epoch_loss = 0  # Initialize avg_epoch_loss here
+
     for epoch in range(epochs):
         model.train()
         total_loss = 0
+
         for data, _ in train_loader:  # We do not use labels here
             data = data.to(device)
             optimizer.zero_grad()
@@ -132,9 +158,28 @@ def main():
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f"Epoch {epoch + 1}/{epochs}, Loss: {total_loss / len(train_loader)}")
 
-    print("Training finished.")
+        avg_epoch_loss = total_loss / len(train_loader)
+        print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_epoch_loss}")
+
+    return avg_epoch_loss
+
+
+def main():
+    input_size = 602112
+    hidden_size = 1024
+    output_size = 602112
+    memory_size = 12
+    intermediate_size = 20
+    epochs = 10
+
+    model, train_loader, test_loader = initialize_hippocampus(input_size, hidden_size, output_size, memory_size, intermediate_size)
+
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.MSELoss()
+
+    avg_epoch_loss = train_hippocampus(model, train_loader, optimizer, criterion, epochs)
+    print("Training finished. Average epoch loss:", avg_epoch_loss)
 
 
 if __name__ == "__main__":

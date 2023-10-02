@@ -50,6 +50,9 @@ class MainTFBrain(tf.keras.Model):
         self.fc = tf.keras.layers.Dense(num_classes)
         self.attention = Attention(num_classes)
 
+        # Curiosity-related parameters
+        self.curiosity_threshold = 0.5  # Adjust this threshold as needed
+
     def call(self, inputs, training=None, mask=None):
         x = inputs['x']
 
@@ -63,7 +66,22 @@ class MainTFBrain(tf.keras.Model):
 
         output, state = self.rnn(combined_input)
         output = self.fc(output[:, 0])
+
+        # Check for curiosity and take actions
+        if self.check_curiosity(output):
+            self.take_curiosity_actions()
+
         return output, state
+
+    def check_curiosity(self, output):
+        # Implement logic to check for curiosity based on model output
+        # Return True if curiosity is detected, otherwise False
+        pass
+
+    def take_curiosity_actions(self):
+        # Define actions to be taken when curiosity is detected
+        # These actions can include capturing additional data, asking questions, or exploration
+        pass
 
 class MAML:
     def __init__(self, model, optimizer, alpha=0.1, beta=1.0):
@@ -71,7 +89,6 @@ class MAML:
         self.optimizer = optimizer
         self.alpha = alpha
         self.beta = beta
-
     def fast_adapt(self, batch, training=True):
         x_support, y_support, x_query, y_query = batch[0], batch[1], batch[2], batch[3]
 
