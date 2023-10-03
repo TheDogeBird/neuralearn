@@ -98,38 +98,38 @@ Depending on the task, this could be a softmax layer for classification, a linea
   **NeuraLearn**/
   │
   ├── **data**/ &nbsp;</br>
-  │ ├── **raw**/ <br>
-  │ ├── **processed**/ <br>
-  │ └── **data_processing.py** <br>
-  │ <br>
-  ├── **models**/
-  │ ├── **init.py**
-  │ ├── **bio_neuron.py**
-  │ ├── **bio_network.py**
-  │ └── ...
+  │ ├── **raw**/ &nbsp;</br>
+  │ ├── **processed**/ &nbsp;</br>
+  │ └── **data_processing.py** &nbsp;</br>
+  │ &nbsp;</br>
+  ├── **models**/ &nbsp;</br>
+  │ ├── **init.py** &nbsp;</br>
+  │ ├── **bio_neuron.py** &nbsp;</br>
+  │ ├── **bio_network.py** &nbsp;</br>
+  │ └── ... &nbsp;</br>
+  │ &nbsp;</br>
+  ├── **training**/ &nbsp;</br>
+  │ ├── **init.py** &nbsp;</br>
+  │ ├── **trainer.py** &nbsp;</br>
+  │ └── **evaluator.py** &nbsp;</br>
+  │ &nbsp;</br>
+  ├── **utils**/ &nbsp;</br>
+  │ ├── **init.py** &nbsp;</br>
+  │ ├── **logger.py** &nbsp;</br>
+  │ └── ... &nbsp;</br>
+  │ &nbsp;</br>
+  ├── **experiments**/ &nbsp;</br>
+  │ ├── **logs**/ &nbsp;</br>
+  │ ├── **checkpoints**/ &nbsp;</br>
+  │ └── ... &nbsp;</br>
   │
-  ├── **training**/
-  │ ├── **init.py**
-  │ ├── **trainer.py**
-  │ └── **evaluator.py**
-  │
-  ├── **utils**/
-  │ ├── **init.py**
-  │ ├── **logger.py**
-  │ └── ...
-  │
-  ├── **experiments**/
-  │ ├── **logs**/
-  │ ├── **checkpoints**/
-  │ └── ...
-  │
-  ├── **configs**/
-  │ ├── **model_config.yaml**
-  │ └── **train_config.yaml**
-  │
-  ├── **main.py**
-  ├── **requirements.txt**
-  └── **README.md**
+  ├── **configs**/ &nbsp;</br>
+  │ ├── **model_config.yaml** &nbsp;</br>
+  │ └── **train_config.yaml** &nbsp;</br>
+  │ &nbsp;</br>
+  ├── **main.py** &nbsp;</br>
+  ├── **requirements.txt** &nbsp;</br>
+  └── **README.md** &nbsp;</br>
 
 ## Roadmap
 **Short-Term**:
