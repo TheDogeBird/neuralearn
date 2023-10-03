@@ -724,5 +724,50 @@ class OutputLayer:
         else:
             return None
 ```
-
 This code provides a basic structure for the output layer, with two decoding methods implemented. As the project progresses, more decoding methods and functionalities can be added to this layer.
+
+---
+
+# Connectivity
+
+### Local Connectivity
+
+Biological neural networks exhibit a property where not every neuron is connected to every other neuron. This is in stark contrast to many artificial neural network architectures where layers are fully connected. In biological systems, neurons often have what's termed as "local receptive fields", meaning they are only connected to a small, localized group of neurons in the previous layer. This phenomenon is especially pronounced in sensory systems, such as the visual system.
+
+#### Advantages of Local Connectivity:
+
+1. **Computational Efficiency**: By limiting the number of connections, the network can process information more efficiently.
+2. **Feature Specialization**: Neurons can become specialized in detecting specific features in the input data. For instance, in the visual system, certain neurons might become edge detectors, while others might specialize in detecting textures.
+3. **Biological Plausibility**: Emulating this property makes our artificial network more closely resemble its biological counterparts.
+
+#### Implementing Local Connectivity in Code:
+
+To simulate local connectivity, we can define a receptive field size for each neuron. When constructing our network, each neuron will only form connections with a subset of neurons from the previous layer, based on this receptive field.
+
+```python
+class Neuron:
+    def __init__(self, neuron_id):
+        self.id = neuron_id
+        self.connections = []
+
+    def connect(self, other_neuron):
+        self.connections.append(other_neuron)
+
+class Layer:
+    def __init__(self, num_neurons, receptive_field_size=None):
+        self.neurons = [Neuron(i) for i in range(num_neurons)]
+        self.receptive_field_size = receptive_field_size
+
+    def connect_to(self, previous_layer):
+        for neuron in self.neurons:
+            # Determine the range of neurons in the previous layer to connect to
+            start_idx = max(0, neuron.id - self.receptive_field_size // 2)
+            end_idx = min(len(previous_layer.neurons), neuron.id + self.receptive_field_size // 2 + 1)
+            
+            # Connect the neuron to the determined range of neurons from the previous layer
+            for prev_neuron in previous_layer.neurons[start_idx:end_idx]:
+                neuron.connect(prev_neuron)
+```
+
+This code establishes a basic framework for creating layers of neurons with local connectivity. The `Layer` class contains a method `connect_to` that establishes connections between its neurons and a subset of neurons from a previous layer, based on the defined receptive field size.
+
