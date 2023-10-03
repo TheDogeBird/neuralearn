@@ -366,3 +366,44 @@ In the above code, the `apply_stdp` method adjusts the synaptic weight based on 
 
 There are many other plasticity rules observed in biological systems, such as homeostatic plasticity, metaplasticity, and more. Implementing these would require a deeper dive into the specific mechanisms and their computational models.
 
+
+### Spike-Timing-Dependent Plasticity (STDP)
+
+STDP is a form of synaptic plasticity that adjusts the strength of connections between neurons based on the relative timing of their spikes. It's a rule that strengthens or weakens synapses based on the time difference between pre-synaptic and post-synaptic spikes.
+
+#### Principles:
+
+1. **Potentiation**: If a pre-synaptic neuron fires (leading to an action potential) just before a post-synaptic neuron, the synapse is strengthened.
+2. **Depression**: If a post-synaptic neuron fires before the pre-synaptic neuron, the synapse is weakened.
+
+#### Code:
+
+```python
+import numpy as np
+
+class STDP:
+    def __init__(self, A_plus=0.005, A_minus=0.005, tau_plus=20.0, tau_minus=20.0):
+        # Parameters for STDP
+        self.A_plus = A_plus      # Maximum weight change for potentiation
+        self.A_minus = A_minus    # Maximum weight change for depression
+        self.tau_plus = tau_plus  # Time constant for potentiation
+        self.tau_minus = tau_minus # Time constant for depression
+
+    def compute_weight_change(self, delta_t):
+        """Compute weight change based on spike time difference."""
+        if delta_t > 0:
+            return self.A_plus * np.exp(-delta_t / self.tau_plus)
+        else:
+            return -self.A_minus * np.exp(delta_t / self.tau_minus)
+
+    def apply_stdp(self, synapse, pre_spike_time, post_spike_time):
+        """Apply STDP rule to adjust synaptic weight."""
+        delta_t = post_spike_time - pre_spike_time
+        weight_change = self.compute_weight_change(delta_t)
+        synapse.weight += weight_change
+        # Ensure weights are within bounds
+        synapse.weight = np.clip(synapse.weight, 0, 1)
+```
+
+In the above code, the `STDP` class provides methods to compute the weight change based on the time difference between pre-synaptic and post-synaptic spikes and apply this change to a given synapse. The parameters `A_plus`, `A_minus`, `tau_plus`, and `tau_minus` can be adjusted based on experimental data or specific requirements.
+
