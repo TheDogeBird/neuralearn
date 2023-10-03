@@ -771,3 +771,50 @@ class Layer:
 
 This code establishes a basic framework for creating layers of neurons with local connectivity. The `Layer` class contains a method `connect_to` that establishes connections between its neurons and a subset of neurons from a previous layer, based on the defined receptive field size.
 
+
+
+## Connectivity
+### Local Receptive Fields for the Input Layer
+
+In biological systems, especially in the visual cortex, neurons don't respond to every part of the visual field but to specific regions known as receptive fields. This concept can be applied to artificial neural networks, especially convolutional neural networks (CNNs), where filters act as receptive fields, scanning the input data (like an image) in local patches.
+
+#### Advantages of Local Receptive Fields:
+
+1. **Parameter Efficiency**: Reduces the number of parameters, as each neuron doesn't connect to every input but only a localized region.
+2. **Feature Detection**: Allows the network to detect local features, which can be combined in subsequent layers to detect more complex patterns.
+3. **Spatial Hierarchy**: By having multiple layers of neurons with local receptive fields, the network can build a spatial hierarchy of features.
+
+#### Implementing Local Receptive Fields in Code:
+
+In traditional artificial neural networks, this can be achieved using convolutional layers. Here's a basic example using Python's TensorFlow:
+
+```python
+import tensorflow as tf
+
+# Assuming input_data is your input layer (e.g., an image)
+input_data = tf.keras.layers.Input(shape=(28, 28, 1))
+
+# Implementing a local receptive field using a convolutional layer
+conv_layer = tf.keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu')(input_data)
+```
+
+In the above code, the `Conv2D` layer scans the `input_data` using a 3x3 filter (our local receptive field) and produces 32 feature maps. Each unit in the `conv_layer` has a receptive field of 3x3 units in the `input_data`.
+
+#### Comprehensive Real-World Complexity Version:
+
+In a real-world scenario, a neural network might have multiple such convolutional layers, pooling layers to downsample the spatial dimensions, and more:
+
+```python
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(28, 28, 1)),
+    tf.keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
+```
+
+This model first uses a convolutional layer with 32 filters and a 3x3 receptive field, followed by a max-pooling layer to downsample the feature maps. Another convolutional layer with 64 filters is applied, followed by another max-pooling layer. The resulting feature maps are flattened and passed through dense layers for classification.
