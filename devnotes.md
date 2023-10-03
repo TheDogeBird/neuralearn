@@ -249,7 +249,7 @@ class Neuron:
 ```
 
 
-## Synapse Model
+### Synapse Model
 
 ---
 
@@ -443,3 +443,50 @@ class RateBasedPlasticity:
 
 In the above code, the `RateBasedPlasticity` class provides methods to compute the weight change based on the average firing rate of the pre-synaptic neuron and apply this change to a given synapse. The parameters `learning_rate` and `rate_threshold` can be adjusted based on experimental data or specific requirements.
 
+
+
+
+
+
+### Construct Layers
+
+### Input Layer
+
+The input layer is the first layer in a neural network and is responsible for receiving and processing the raw input data. In spiking neural networks, the input data is typically encoded into spike trains using various encoding schemes. One of the most common encoding schemes is rate coding.
+
+#### Rate Coding
+
+Rate coding is a method where the frequency of spikes is proportional to the intensity of the input. For example, a brighter pixel in an image or a louder sound would result in a higher spike rate.
+
+##### Code:
+
+\```python
+def rate_coding(input_data, max_rate=100):
+    """Convert input data to spike rates."""
+    normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+    spike_rates = max_rate * normalized_data
+    return spike_rates
+\```
+
+#### (Optional) Other Encoding Schemes
+
+There are various other encoding schemes like time-to-first-spike, phase coding, etc. These can be explored based on the specific requirements of the project.
+
+---
+
+### Full Code for Input Layer:
+
+\```python
+import numpy as np
+
+class InputLayer:
+    def __init__(self, size, max_rate=100):
+        self.size = size
+        self.max_rate = max_rate
+
+    def encode(self, input_data):
+        """Encode input data into spike rates."""
+        normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+        spike_rates = self.max_rate * normalized_data
+        return spike_rates
+\```
