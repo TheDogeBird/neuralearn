@@ -95,8 +95,8 @@ Depending on the task, this could be a softmax layer for classification, a linea
 
 ## Directory Structure
 
-  **NeuraLearn**/
-  │
+  **NeuraLearn**/ &nbsp;</br>
+  │ &nbsp;</br>
   ├── **data**/ &nbsp;</br>
   │ ├── **raw**/ &nbsp;</br>
   │ ├── **processed**/ &nbsp;</br>
