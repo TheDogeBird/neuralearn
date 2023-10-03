@@ -97,11 +97,11 @@ Depending on the task, this could be a softmax layer for classification, a linea
 
   **NeuraLearn**/
   │
-  ├── **data**/
-  │ ├── **raw**/
-  │ ├── **processed**/
-  │ └── **data_processing.py**
-  │
+  ├── **data**/ &nbsp;
+  │ ├── **raw**/ &nbsp;
+  │ ├── **processed**/ &nbsp;
+  │ └── **data_processing.py** &nbsp;
+  │ &nbsp;
   ├── **models**/
   │ ├── **init.py**
   │ ├── **bio_neuron.py**
