@@ -39,8 +39,8 @@ This document outlines the development tasks required to build the NeuraLearn pr
 - [✅] **Hidden Layers**:
   - [✅] Construct layers with biologically-inspired neurons.
   - [✅] Define layer-wise properties, if any (stay true to the human brain)
-- [❌] **Output Layer**:
-  - [❌] Implement decoding mechanisms to convert spiking activity into task-specific outputs.
+- [✅] **Output Layer**:
+  - [✅] Implement decoding mechanisms to convert spiking activity into task-specific outputs.
 
 ## Connectivity
 
