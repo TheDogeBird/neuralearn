@@ -14,14 +14,14 @@ This document outlines the development tasks required to build the NeuraLearn pr
 
 ## Neuron Model
 
-- [ ] Define the basic properties of a neuron:
-  - [ ] Membrane potential
-  - [ ] Firing threshold
-  - [ ] Refractory period
-  - [ ] (Optional) Ion channels and dynamics
-- [ ] Implement a method to receive inputs (spikes from other neurons).
-- [ ] Implement a method to process inputs and determine if the neuron should fire.
-- [ ] Implement a method to reset the neuron after firing.
+- [x] Define the basic properties of a neuron:
+  - [x] Membrane potential
+  - [x] Firing threshold
+  - [x] Refractory period
+  - [x] (Optional) Ion channels and dynamics
+- [x] Implement a method to receive inputs (spikes from other neurons).
+- [x] Implement a method to process inputs and determine if the neuron should fire.
+- [x] Implement a method to reset the neuron after firing.
 
 ## Synapses
 
@@ -76,5 +76,3 @@ This document outlines the development tasks required to build the NeuraLearn pr
 - [ ] Implement visualization tools for network activity and performance.
 
 ---
-
-Contributions to any of the above tasks are highly welcomed! Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
