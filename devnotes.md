@@ -490,3 +490,44 @@ class InputLayer:
         spike_rates = self.max_rate * normalized_data
         return spike_rates
 ```
+
+### Implement Rate Coding to Encode Sensory Data into Spikes
+
+Rate coding is a method where the frequency of spikes is proportional to the intensity of the input. This encoding scheme is commonly used in spiking neural networks to transform continuous input data (like pixel intensities) into discrete spike trains.
+
+#### Concept:
+
+In rate coding, the value of the input data determines the frequency of the spikes. For instance, higher values in the input data would result in a higher frequency of spikes, and vice versa. This method allows for a simple yet effective way to represent continuous values in the form of spikes.
+
+#### Code Snippet:
+
+\```python
+def rate_coding(input_data, max_rate=100):
+    """Convert input data to spike rates."""
+    normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+    spike_rates = max_rate * normalized_data
+    return spike_rates
+\```
+
+This function takes in the `input_data` and a `max_rate` which denotes the maximum possible spike rate. The data is first normalized to a range between 0 and 1, and then multiplied by the `max_rate` to get the spike rates.
+
+---
+
+### Full Code for Rate Coding:
+
+```python
+import numpy as np
+
+class InputLayer:
+    def __init__(self, size, max_rate=100):
+        self.size = size
+        self.max_rate = max_rate
+
+    def encode(self, input_data):
+        """Encode input data into spike rates using rate coding."""
+        normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+        spike_rates = self.max_rate * normalized_data
+        return spike_rates
+```
+
+In the `InputLayer` class, the `encode` method implements the rate coding scheme. The method normalizes the input data and then multiplies it by the maximum spike rate to get the spike rates for each data point.
