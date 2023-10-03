@@ -247,3 +247,44 @@ class Neuron:
         self.V_m = self.resting_potential
         # Additional reset logic can be added here if needed
 ```
+
+
+## Synapse Model
+
+---
+
+## Synaptic Weights and Their Initializations
+
+In neural networks, synaptic weights represent the strength or amplitude of a connection between two neurons. The value of these weights determines the magnitude of the influence one neuron has on another. Proper initialization of these weights is crucial for the convergence and performance of the network.
+
+There are several methods for weight initialization, and the choice often depends on the type of activation function used in the neurons. Some common initialization methods include:
+
+1. **Zero Initialization**: Setting all weights to zero. This is generally not recommended as it leads to the problem where every neuron in the network behaves the same way, making learning impossible.
+2. **Random Initialization**: Weights are initialized with small random numbers. This breaks the symmetry but can sometimes lead to slow convergence.
+3. **Xavier/Glorot Initialization**: Suitable for the sigmoid and hyperbolic tangent activation functions. The weights are initialized with values drawn from a distribution with zero mean and a specific variance.
+4. **He Initialization**: Designed for ReLU activation functions. The weights are initialized with values drawn from a distribution with zero mean and a variance of 2/n, where n is the number of input units.
+
+#### Code:
+
+```python
+import numpy as np
+
+class Synapse:
+    def __init__(self, input_size, output_size, initialization="xavier"):
+        self.input_size = input_size
+        self.output_size = output_size
+        self.initialization = initialization
+        self.weights = self.initialize_weights()
+
+    def initialize_weights(self):
+        if self.initialization == "zero":
+            return np.zeros((self.input_size, self.output_size))
+        elif self.initialization == "random":
+            return np.random.randn(self.input_size, self.output_size) * 0.01
+        elif self.initialization == "xavier":
+            return np.random.randn(self.input_size, self.output_size) / np.sqrt(self.input_size)
+        elif self.initialization == "he":
+            return np.random.randn(self.input_size, self.output_size) * np.sqrt(2. / self.input_size)
+        else:
+            raise ValueError(f"Unknown initialization method: {self.initialization}")
+```
