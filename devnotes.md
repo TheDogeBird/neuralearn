@@ -249,7 +249,7 @@ class Neuron:
 ```
 
 
-### Synapse Model
+# Synapse Model
 
 ---
 
@@ -419,7 +419,7 @@ Rate-Based Plasticity adjusts synaptic weights based on the average firing rate 
 
 #### Code:
 
-\```python
+```python
 class RateBasedPlasticity:
     def __init__(self, learning_rate=0.01, rate_threshold=10.0):
         # Parameters for Rate-Based Plasticity
@@ -439,7 +439,7 @@ class RateBasedPlasticity:
         synapse.weight += weight_change
         # Ensure weights are within bounds
         synapse.weight = np.clip(synapse.weight, 0, 1)
-\```
+```
 
 In the above code, the `RateBasedPlasticity` class provides methods to compute the weight change based on the average firing rate of the pre-synaptic neuron and apply this change to a given synapse. The parameters `learning_rate` and `rate_threshold` can be adjusted based on experimental data or specific requirements.
 
@@ -460,13 +460,13 @@ Rate coding is a method where the frequency of spikes is proportional to the int
 
 ##### Code:
 
-\```python
+```python
 def rate_coding(input_data, max_rate=100):
     """Convert input data to spike rates."""
     normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
     spike_rates = max_rate * normalized_data
     return spike_rates
-\```
+```
 
 #### (Optional) Other Encoding Schemes
 
@@ -476,7 +476,7 @@ There are various other encoding schemes like time-to-first-spike, phase coding,
 
 ### Full Code for Input Layer:
 
-\```python
+```python
 import numpy as np
 
 class InputLayer:
@@ -489,4 +489,4 @@ class InputLayer:
         normalized_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
         spike_rates = self.max_rate * normalized_data
         return spike_rates
-\```
+```
