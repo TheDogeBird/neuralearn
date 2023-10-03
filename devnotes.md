@@ -165,3 +165,85 @@ class Neuron:
 In this model, the `integrate_inputs` method processes the inputs that have arrived up to the current time, adjusting the membrane potential (`V_m`) accordingly. The `check_firing` method then checks if the neuron should fire based on the current membrane potential and the time since the neuron last fired (to account for the refractory period). If the neuron fires, the `fire_action_potential` method resets the membrane potential and records the firing time.
 
 
+
+### 7. Resetting the Neuron After Firing
+
+After a neuron fires an action potential, it's crucial to reset certain properties to ensure the neuron can process subsequent inputs correctly. This reset process often involves returning the membrane potential to its resting state and updating the time of the last spike. Additionally, in more complex models, other properties like ion concentrations might be reset.
+
+#### Code for Resetting:
+```python
+    def reset_after_firing(self):
+        """Reset the neuron's properties after firing."""
+        self.V_m = self.resting_potential
+        # Additional reset logic can be added here if needed
+```
+
+By invoking this method after the neuron fires, we ensure that it's ready to process new inputs and fire again when the conditions are met.
+
+---
+
+#### Full Comprehensive Neuron Code:
+```python
+import numpy as np
+
+class Neuron:
+    def __init__(self):
+        self.V_m = -70  # Initial membrane potential in mV (resting potential)
+        self.resting_potential = -70  # Resting potential in mV
+        self.capacitance = 1.0  # Capacitance of the neuronal membrane
+        self.threshold = -55  # Firing threshold in mV
+        self.refractory_period = 2  # Refractory period in ms
+        self.last_spike_time = None  # Time of the last spike
+        self.synaptic_inputs = []  # List to store incoming synaptic activities
+
+    class Synapse:
+        def __init__(self, pre_neuron, weight, delay, neurotransmitter_type):
+            self.pre_neuron = pre_neuron  # Neuron sending the spike
+            self.weight = weight  # Strength of the connection
+            self.delay = delay  # Time delay for spike propagation
+            self.neurotransmitter_type = neurotransmitter_type  # 'excitatory' or 'inhibitory'
+
+        def propagate_spike(self, spike_time):
+            """Calculate the effect of an incoming spike."""
+            if self.neurotransmitter_type == 'excitatory':
+                effect = self.weight
+            else:
+                effect = -self.weight
+            return spike_time + self.delay, effect
+
+    def receive_spike(self, synapse, spike_time):
+        """Handle incoming spikes through synapses."""
+        new_spike_time, effect = synapse.propagate_spike(spike_time)
+        self.synaptic_inputs.append((new_spike_time, effect))
+
+    def integrate_inputs(self, current_time):
+        """Integrate inputs over time and adjust the membrane potential."""
+        total_effect = 0
+        new_inputs = []
+        for spike_time, effect in self.synaptic_inputs:
+            if spike_time <= current_time:
+                total_effect += effect
+            else:
+                new_inputs.append((spike_time, effect))
+        self.synaptic_inputs = new_inputs
+        self.V_m += total_effect
+
+    def check_firing(self, current_time):
+        """Check if the neuron should fire based on the membrane potential and refractory period."""
+        if (self.V_m >= self.threshold) and (current_time - self.last_spike_time > self.refractory_period):
+            self.fire_action_potential(current_time)
+            self.reset_after_firing()
+            return True
+        return False
+
+    def fire_action_potential(self, current_time):
+        """Fire an action potential and reset the membrane potential."""
+        self.V_m = self.resting_potential
+        self.last_spike_time = current_time
+        # Here, you'd also propagate the spike to connected neurons
+
+    def reset_after_firing(self):
+        """Reset the neuron's properties after firing."""
+        self.V_m = self.resting_potential
+        # Additional reset logic can be added here if needed
+```
