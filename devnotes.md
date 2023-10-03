@@ -51,3 +51,41 @@ Ion channels control the flow of ions across the neuron's membrane, influencing 
         self.Ca_concentration = 0.05  # Calcium ion concentration
         self.ion_channels = {"Na": True, "K": True, "Ca": False}  # Active ion channels
 ```
+
+
+### 5. Receiving Inputs
+
+Neurons receive inputs through synapses, which are connections from other neurons. Each synapse has a weight, which determines the strength of the connection. Additionally, synapses can be excitatory (increasing the membrane potential) or inhibitory (decreasing the membrane potential). We'll also consider a time delay for the propagation of the spike from one neuron to another.
+
+#### Code:
+\```python
+class Neuron:
+    def __init__(self):
+        # ... (previous initialization code)
+        self.synaptic_inputs = []  # List to store incoming synaptic activities
+
+    class Synapse:
+        def __init__(self, pre_neuron, weight, delay, neurotransmitter_type):
+            self.pre_neuron = pre_neuron  # Neuron sending the spike
+            self.weight = weight  # Strength of the connection
+            self.delay = delay  # Time delay for spike propagation
+            self.neurotransmitter_type = neurotransmitter_type  # 'excitatory' or 'inhibitory'
+
+        def propagate_spike(self, spike_time):
+            """Calculate the effect of an incoming spike."""
+            if self.neurotransmitter_type == 'excitatory':
+                effect = self.weight
+            else:
+                effect = -self.weight
+            return spike_time + self.delay, effect
+
+    def receive_spike(self, synapse, spike_time):
+        """Handle incoming spikes through synapses."""
+        new_spike_time, effect = synapse.propagate_spike(spike_time)
+        self.synaptic_inputs.append((new_spike_time, effect))
+        # In a real-time simulation, you'd adjust V_m based on the effect at the appropriate time
+\```
+
+In this model, each neuron can have multiple synapses. When a spike is received, its effect on the post-synaptic neuron's membrane potential (`V_m`) is determined by the synapse's weight and neurotransmitter type. The spike also has a time delay associated with it, representing the time it takes for the spike to propagate from the pre-synaptic neuron to the post-synaptic neuron.
+
+(Note: In the actual markdown, you'd remove the backslashes before the triple backticks. They are included here to prevent the code blocks from being executed in this format.)
