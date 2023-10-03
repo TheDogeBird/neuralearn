@@ -448,7 +448,7 @@ In the above code, the `RateBasedPlasticity` class provides methods to compute t
 
 
 
-### Construct Layers
+# Construct Layers
 
 ### Input Layer
 
