@@ -13,11 +13,7 @@ NeuraLearn aims to bridge the gap between artificial neural networks and the int
   - [Modulatory Systems](#modulatory-systems)
 - [Training Algorithms](#training-algorithms)
 - [Directory Structure](#directory-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contribution](#contribution)
 - [Roadmap](#roadmap)
-- [License](#license)
 
 ## Introduction
 
