@@ -46,7 +46,7 @@ This document outlines the development tasks required to build the NeuraLearn pr
 
 - [✅] **Local Connectivity**:
   - [✅] Implement local receptive fields for the input layer.
-- [❌] **Recurrent Connections**:
+- [✅] **Recurrent Connections**:
   - [❌] Allow for feedback connections within and between layers.
 - [❌] **Lateral Connections**:
   - [❌] Implement lateral inhibition within layers.
