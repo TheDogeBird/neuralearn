@@ -407,3 +407,39 @@ class STDP:
 
 In the above code, the `STDP` class provides methods to compute the weight change based on the time difference between pre-synaptic and post-synaptic spikes and apply this change to a given synapse. The parameters `A_plus`, `A_minus`, `tau_plus`, and `tau_minus` can be adjusted based on experimental data or specific requirements.
 
+
+### Rate-Based Plasticity
+
+Rate-Based Plasticity adjusts synaptic weights based on the average firing rate of the pre-synaptic neuron over a certain time window. The idea is that neurons which fire more frequently should exert a stronger influence on their post-synaptic partners.
+
+#### Principles:
+
+1. **Potentiation**: If the average firing rate of the pre-synaptic neuron over a certain time window exceeds a threshold, the synaptic weight is increased.
+2. **Depression**: If the average firing rate is below the threshold, the synaptic weight is decreased.
+
+#### Code:
+
+\```python
+class RateBasedPlasticity:
+    def __init__(self, learning_rate=0.01, rate_threshold=10.0):
+        # Parameters for Rate-Based Plasticity
+        self.learning_rate = learning_rate      # Learning rate for weight adjustments
+        self.rate_threshold = rate_threshold    # Firing rate threshold for potentiation/depression
+
+    def compute_weight_change(self, avg_rate):
+        """Compute weight change based on average firing rate."""
+        if avg_rate > self.rate_threshold:
+            return self.learning_rate
+        else:
+            return -self.learning_rate
+
+    def apply_plasticity(self, synapse, avg_rate):
+        """Apply rate-based plasticity rule to adjust synaptic weight."""
+        weight_change = self.compute_weight_change(avg_rate)
+        synapse.weight += weight_change
+        # Ensure weights are within bounds
+        synapse.weight = np.clip(synapse.weight, 0, 1)
+\```
+
+In the above code, the `RateBasedPlasticity` class provides methods to compute the weight change based on the average firing rate of the pre-synaptic neuron and apply this change to a given synapse. The parameters `learning_rate` and `rate_threshold` can be adjusted based on experimental data or specific requirements.
+
