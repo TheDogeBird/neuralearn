@@ -1028,3 +1028,51 @@ model = tf.keras.Sequential([
 ```
 
 This model integrates lateral inhibition considering spatial neighborhoods within a deeper architecture, using batch normalization for stability and pooling for down-sampling.
+
+
+
+
+# Learning Mechanisms
+
+### Hebbian Learning
+
+Hebbian Learning is a learning principle based on the idea that "neurons that fire together, wire together." It's a form of unsupervised learning where synaptic weights are adjusted based on the correlation between pre-synaptic and post-synaptic activity.
+
+#### Basic Principles:
+
+1. **Strengthening Synapses**: If a neuron A consistently takes part in firing neuron B, then the synapse from A to B is strengthened.
+2. **Weakening Synapses**: If neuron A's firing is not correlated with neuron B's firing, the synapse might be weakened or remain unchanged.
+
+#### Basic Implementation:
+
+Here's a basic example using Python:
+
+```python
+def hebbian_update(pre_synaptic_activity, post_synaptic_activity, weights, learning_rate=0.01):
+    delta_w = learning_rate * pre_synaptic_activity * (post_synaptic_activity - weights * pre_synaptic_activity)
+    new_weights = weights + delta_w
+    return new_weights
+```
+
+#### Comprehensive Real-World Complexity Version:
+
+In a more complex scenario, Hebbian learning can be combined with other learning rules, decay mechanisms, and normalization:
+
+```python
+def complex_hebbian_update(pre_synaptic_activity, post_synaptic_activity, weights, learning_rate=0.01, decay_rate=0.001):
+    # Hebbian learning rule
+    delta_w = learning_rate * pre_synaptic_activity * (post_synaptic_activity - weights * pre_synaptic_activity)
+    
+    # Weight decay
+    decay = decay_rate * weights
+    
+    # Update weights
+    new_weights = weights + delta_w - decay
+    
+    # Normalize weights to prevent them from growing too large
+    new_weights = new_weights / tf.norm(new_weights, axis=1, keepdims=True)
+    
+    return new_weights
+```
+
+This function integrates Hebbian learning with weight decay and normalization to ensure stability and prevent weights from growing indefinitely.
