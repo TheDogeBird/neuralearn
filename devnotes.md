@@ -1076,3 +1076,55 @@ def complex_hebbian_update(pre_synaptic_activity, post_synaptic_activity, weight
 ```
 
 This function integrates Hebbian learning with weight decay and normalization to ensure stability and prevent weights from growing indefinitely.
+
+
+## Spike-Timing-Dependent Plasticity (STDP)
+
+STDP is a biological learning rule based on the relative timing of spikes between pre-synaptic and post-synaptic neurons. The basic idea is that the synaptic weight is adjusted based on the time difference between the firing of the pre-synaptic and post-synaptic neurons.
+
+#### Basic Principles:
+
+1. **Potentiation**: If the pre-synaptic neuron fires just before the post-synaptic neuron (within a certain time window), the synapse is strengthened.
+2. **Depression**: If the post-synaptic neuron fires before the pre-synaptic neuron, the synapse is weakened.
+
+#### Basic Implementation:
+
+Here's a basic example using Python:
+
+```python
+def stdp_update(pre_spike_time, post_spike_time, weight, a_plus=0.005, a_minus=0.005, tau_plus=20.0, tau_minus=20.0):
+    delta_t = post_spike_time - pre_spike_time
+    if delta_t > 0:
+        # Potentiation
+        delta_w = a_plus * np.exp(-delta_t / tau_plus)
+    else:
+        # Depression
+        delta_w = -a_minus * np.exp(delta_t / tau_minus)
+    new_weight = weight + delta_w
+    return new_weight
+```
+
+#### Comprehensive Real-World Complexity Version:
+
+In a more complex scenario, STDP can be combined with other mechanisms like weight normalization, weight limits, and more:
+
+```python
+def complex_stdp_update(pre_spike_times, post_spike_times, weights, a_plus=0.005, a_minus=0.005, tau_plus=20.0, tau_minus=20.0, max_weight=1.0, min_weight=0.0):
+    for pre_time in pre_spike_times:
+        for post_time in post_spike_times:
+            delta_t = post_time - pre_time
+            if delta_t > 0:
+                # Potentiation
+                delta_w = a_plus * np.exp(-delta_t / tau_plus)
+            else:
+                # Depression
+                delta_w = -a_minus * np.exp(delta_t / tau_minus)
+            weights += delta_w
+    # Ensure weights stay within limits
+    weights = np.clip(weights, min_weight, max_weight)
+    # Normalize weights
+    weights = weights / np.sum(weights)
+    return weights
+```
+
+This function integrates STDP with weight normalization and weight limits to ensure stability and prevent weights from growing or shrinking indefinitely.
