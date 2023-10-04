@@ -1220,3 +1220,60 @@ class SpikingLoss:
 ```
 
 This combined loss function allows for balancing between rate-based and timing-based objectives, while also introducing a regularization term to penalize excessive spiking, which is a common concern in SNNs.
+
+
+
+
+## Learning Mechanisms
+
+### Gradient Descent and Weight Updates for Spiking Neural Networks
+
+Gradient descent is an optimization algorithm used to minimize the loss function by adjusting the weights in the network. In the context of SNNs, gradient descent can be more challenging due to the non-differentiable nature of spikes. However, approximations and surrogate gradients can be used to make the learning rule differentiable.
+
+#### Basic Principles:
+
+1. **Surrogate Gradient**: An approximation to the real gradient, making it possible to use gradient-based methods.
+2. **Weight Update Rule**: The weights are adjusted based on the gradient of the loss with respect to the weights.
+
+#### Basic Implementation:
+
+Here's a basic example using Python:
+
+```python
+import numpy as np
+
+def surrogate_gradient(x):
+    """Surrogate gradient for the non-differentiable spiking function."""
+    return 0.3 * np.exp(-x**2 / (2 * 0.3**2))
+
+def gradient_descent(weights, gradients, learning_rate=0.01):
+    """Basic gradient descent update."""
+    return weights - learning_rate * gradients
+
+def compute_gradients(predicted_spikes, target_spikes, weights, loss_function):
+    """Compute the gradient of the loss with respect to the weights."""
+    loss = loss_function(predicted_spikes, target_spikes)
+    dloss_doutput = (predicted_spikes - target_spikes)
+    doutput_dinput = surrogate_gradient(weights)
+    return dloss_doutput * doutput_dinput
+```
+
+#### Comprehensive Real-World Complexity Version:
+
+In a more complex scenario, we might consider momentum and other optimization techniques:
+
+```python
+class GradientDescentOptimizer:
+    def __init__(self, learning_rate=0.01, momentum=0.9):
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.previous_gradient = 0
+
+    def update_weights(self, weights, gradients):
+        """Gradient descent with momentum."""
+        update = self.momentum * self.previous_gradient + self.learning_rate * gradients
+        self.previous_gradient = update
+        return weights - update
+```
+
+This optimizer introduces momentum, which can help accelerate gradients in the right directions and dampen oscillations. It's
