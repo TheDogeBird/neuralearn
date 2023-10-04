@@ -140,3 +140,4 @@ Depending on the task, this could be a softmax layer for classification, a linea
 - Incorporate feedback from the community to refine models and architectures.
 - Explore potential real-world applications.
 - Collaborate with neuroscientists to ensure biological accuracy and relevance.
+
