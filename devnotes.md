@@ -1165,6 +1165,7 @@ In a more complex scenario, backpropagation in SNNs would involve multiple layer
 ```python
 class SpikingNN:
     def __init__(self, input
+```
 
 
 
