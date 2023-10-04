@@ -47,16 +47,16 @@ This document outlines the development tasks required to build the NeuraLearn pr
 - [✅] **Local Connectivity**:
   - [✅] Implement local receptive fields for the input layer.
 - [✅] **Recurrent Connections**:
-  - [❌] Allow for feedback connections within and between layers.
-- [❌] **Lateral Connections**:
-  - [❌] Implement lateral inhibition within layers.
+  - [✅] Allow for feedback connections within and between layers.
+- [✅] **Lateral Connections**:
+  - [✅] Implement lateral inhibition within layers.
 
 ## Learning Mechanisms
 
-- [❌] Implement Hebbian Learning.
-- [❌] Implement STDP.
-- [❌] Implement backpropagation:
-  - [❌] Define loss functions.
+- [✅] Implement Hebbian Learning.
+- [✅] Implement STDP.
+- [✅] Implement backpropagation:
+  - [✅] Define loss functions.
   - [❌] Implement gradient descent and weight updates.
 
 ## Training Infrastructure
