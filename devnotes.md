@@ -1128,3 +1128,40 @@ def complex_stdp_update(pre_spike_times, post_spike_times, weights, a_plus=0.005
 ```
 
 This function integrates STDP with weight normalization and weight limits to ensure stability and prevent weights from growing or shrinking indefinitely.
+
+
+## Backpropagation in Spiking Neural Networks
+
+Backpropagation is a supervised learning algorithm used for training feedforward artificial neural networks. However, its direct application to spiking neural networks (SNNs) is non-trivial due to the non-differentiable nature of spikes. Several methods have been proposed to adapt backpropagation for SNNs, one of which is the surrogate gradient method.
+
+#### Basic Principles:
+
+1. **Surrogate Gradient**: Since the spike function is non-differentiable, we use a differentiable surrogate function to approximate the gradient during backpropagation.
+2. **Error Calculation**: The difference between the desired output and the actual output is calculated.
+3. **Weight Update**: Weights are adjusted in the direction that minimizes the error.
+
+#### Basic Implementation:
+
+Here's a basic example using Python:
+
+```python
+import numpy as np
+
+def surrogate_gradient(x):
+    """Surrogate gradient for the spike function."""
+    return 0.3 * np.exp(-x**2 / 2)
+
+def backprop_update(weights, learning_rate, error, activations):
+    """Basic backpropagation weight update."""
+    dW = np.outer(error, activations)
+    weights -= learning_rate * dW
+    return weights
+```
+
+#### Comprehensive Real-World Complexity Version:
+
+In a more complex scenario, backpropagation in SNNs would involve multiple layers, time steps, and additional considerations for the unique properties of spiking neurons:
+
+```python
+class SpikingNN:
+    def __init__(self, input
