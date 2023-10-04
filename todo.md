@@ -57,7 +57,7 @@ This document outlines the development tasks required to build the NeuraLearn pr
 - [✅] Implement STDP.
 - [✅] Implement backpropagation:
   - [✅] Define loss functions.
-  - [❌] Implement gradient descent and weight updates.
+  - [✅] Implement gradient descent and weight updates.
 
 ## Training Infrastructure
 
